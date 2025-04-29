@@ -1,4 +1,4 @@
-const { generateHelpMessage, generateCommandHelp } = require('../core/commandhandler/help');
+const { generateHelpMessage, generateCommandHelp } = require('../../core/commandhandler/help');
 
 module.exports = {
     name: 'help',
@@ -21,7 +21,7 @@ module.exports = {
         if (!commandName) {
             interaction.reply({ content: generateHelpMessage(interaction.client), ephemeral: true });
         } else {
-            interaction.reply({ content: generateCommandHelp(interaction.client, commandName.toLowerCase()), ephemeral: true });
+            interaction.reply({ content: generateCommandHelp(interaction.client, commandName.toLowerCase())});
         }
     },
     async executePrefix(message, args) {
