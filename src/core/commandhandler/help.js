@@ -1,24 +1,68 @@
+const { EmbedBuilder } = require("discord.js");
+
 function generateHelpMessage(client) {
-  const commandsList = [...client.commands.values()];
-  let helpMessage = '**Available Commands:**\n\n';
-  for (const command of commandsList) {
-    helpMessage += `- \`${command.name}\`: ${command.description || 'No description'}\n`;
-  }
-  return helpMessage;
+  const categories = {};
+
+  // Kelompokkan command berdasarkan kategori
+  client.commands.forEach((command) => {
+    const category = command.category || "Misc";
+    if (!categories[category]) categories[category] = [];
+    categories[category].push(command.name);
+  });
+
+  const embed = new EmbedBuilder()
+    .setColor("#3498db")
+    .setTitle("📜 List of Commands")
+    .setDescription("Berikut adalah semua command yang tersedia:");
+
+  // Tambahkan field untuk setiap kategori
+  Object.keys(categories).forEach((category) => {
+    const commands = categories[category]
+      .sort()
+      .map((cmd) => `\`${cmd}\``)
+      .join(" ");
+
+    embed.addFields({ name: `📁 ${category}`, value: commands, inline: false });
+  });
+
+  return embed;
 }
 
 function generateCommandHelp(client, commandName) {
   const command = client.commands.get(commandName);
-  if (!command) return 'Command not found.';
-
-  let helpDetail = `# **${command.name}**\n\n`;
-  if (command.aliases) {
-    helpDetail += `**Aliases:** ${command.aliases.join(', ')}\n\n`;
+  if (!command) {
+    return new EmbedBuilder()
+      .setColor("#e74c3c")
+      .setTitle("❌ Command Not Found")
+      .setDescription("Perintah yang kamu cari tidak ditemukan.");
   }
-  helpDetail += `**Description:** ${command.description || 'No description'}\n\n`;
-  helpDetail += `**Usage:** ${command.usage || 'No usage provided.'}\n`;
 
-  return helpDetail;
+  // Format permissions: bisa string, array, atau tidak ada sama sekali
+  let permissionsText = "None";
+  if (Array.isArray(command.permissions)) {
+    permissionsText =
+      command.permissions.length > 0 ? command.permissions.join(", ") : "None";
+  } else if (typeof command.permissions === "string") {
+    permissionsText = command.permissions;
+  }
+
+  return new EmbedBuilder()
+    .setColor("#2ecc71")
+    .setTitle(`🔍 Command: \`${command.name}\``)
+    .addFields(
+      {
+        name: "📖 Description",
+        value: command.description || "No description.",
+      },
+      {
+        name: "⏱️ Cooldown",
+        value: command.cooldown || "No cooldown.",
+      },
+      {
+        name: "🔒 Permissions",
+        value: permissionsText,
+      }
+    );
 }
 
 module.exports = { generateHelpMessage, generateCommandHelp };
